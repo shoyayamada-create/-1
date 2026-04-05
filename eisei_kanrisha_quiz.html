@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="衛生管理者2種">
+<title>第２種衛生管理者 一問一答</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 16px; }
+body {
+  font-family: 'Noto Sans JP', -apple-system, sans-serif;
+  background: #f5f6fa;
+  color: #1a1a2e;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+:root {
+  --accent: #2563EB;
+  --accent-light: #EFF6FF;
+  --accent-dark: #1d4ed8;
+  --success: #16a34a;
+  --success-light: #f0fdf4;
+  --danger: #dc2626;
+  --danger-light: #fef2f2;
+  --warn: #d97706;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --bg: #ffffff;
+  --bg2: #f3f4f6;
+  --border: rgba(0,0,0,0.1);
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+/* ===== LAYOUT ===== */
+#app { max-width: 600px; margin: 0 auto; padding: 0 0 80px; }
+
+/* ===== HEADER ===== */
+.header {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 20px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.header-badge {
+  display: inline-block;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-bottom: 4px;
+}
+.header h1 {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ===== TABS ===== */
+.tab-bar {
+  display: flex;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  gap: 0;
+}
+.tab-btn {
+  flex: 1;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 12px 8px 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  position: relative;
+  transition: all 0.2s;
+}
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-badge {
+  display: none;
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+}
+.tab-badge.show { display: inline; }
+
+/* ===== QUIZ TAB ===== */
+#quiz-tab { padding: 16px; }
+#weak-tab { padding: 16px; display: none; }
+#weak-tab.show { display: block; }
+
+/* ===== STATS ===== */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.stat-card {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 10px 4px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.stat-card .val { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1; }
+.stat-card .lbl { font-size: 9px; color: var(--text-muted); margin-top: 3px; }
+.stat-card.correct .val { color: var(--success); }
+.stat-card.wrong .val { color: var(--danger); }
+.stat-card.rate .val { color: var(--warn); }
+
+/* ===== FILTER ===== */
+.filter-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 14px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.filter-scroll::-webkit-scrollbar { display: none; }
+.filter-btn {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ===== PROGRESS ===== */
+.progress-wrap { margin-bottom: 14px; }
+.progress-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.progress-bar { height: 5px; background: var(--bg2); border-radius: 5px; overflow: hidden; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #60a5fa);
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+/* ===== CAT CHIP ===== */
+.cat-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+.cat-chip.rodo { background: #EDE9FE; color: #6d28d9; }
+.cat-chip.kenko { background: #D1FAE5; color: #065f46; }
+.cat-chip.kanri { background: #FEF3C7; color: #92400e; }
+.cat-chip.sagyo { background: #DBEAFE; color: #1e40af; }
+
+/* ===== QUESTION CARD ===== */
+.q-card {
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.q-num { font-size: 10px; color: var(--text-muted); margin-bottom: 6px; }
+.q-text { font-size: 15px; font-weight: 500; color: var(--text); line-height: 1.75; }
+
+/* ===== CHOICES ===== */
+.choices { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.choice-btn {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  text-align: left;
+  padding: 13px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1.55;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  -webkit-appearance: none;
+}
+.choice-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+.choice-btn:active:not(:disabled) { transform: scale(0.98); }
+.choice-btn.correct { border-color: var(--success); background: var(--success-light); }
+.choice-btn.correct .choice-label { background: var(--success); border-color: var(--success); color: #fff; }
+.choice-btn.wrong { border-color: var(--danger); background: var(--danger-light); }
+.choice-btn.wrong .choice-label { background: var(--danger); border-color: var(--danger); color: #fff; }
+.choice-btn.reveal-correct { border-color: var(--success); background: var(--success-light); opacity: 0.65; }
+
+/* ===== RESULT BANNER ===== */
+.result-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.result-banner.hidden { display: none; }
+.result-banner.ok { background: var(--success-light); color: var(--success); border: 1px solid #bbf7d0; }
+.result-banner.ng { background: var(--danger-light); color: var(--danger); border: 1px solid #fecaca; }
+.result-icon { font-size: 20px; }
+
+/* ===== EXPLANATION ===== */
+.explanation {
+  background: #f0f7ff;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.75;
+  border-left: 3px solid var(--accent);
+}
+.explanation strong { font-weight: 700; color: var(--accent); }
+.explanation.hidden { display: none; }
+
+/* ===== NAV ===== */
+.nav-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.nav-btn {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.nav-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.nav-btn:active { transform: scale(0.97); }
+.nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.skip-link {
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* ===== RESULT SCREEN ===== */
+.result-screen { display: none; text-align: center; padding: 2rem 1rem; }
+.result-screen.show { display: block; }
+.result-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid var(--accent);
+  background: var(--accent-light);
+}
+.result-pct { font-size: 30px; font-weight: 700; color: var(--accent); line-height: 1; }
+.result-sub2 { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.result-screen h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+.result-screen .result-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6; }
+.result-btns { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.restart-btn {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+}
+.review-btn {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px;
+  border-radius: 14px;
+  border: 2px solid var(--danger);
+  background: var(--danger-light);
+  color: var(--danger);
+  cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+}
+.review-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ===== WEAK TAB ===== */
+.weak-empty { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+.weak-empty .icon { font-size: 44px; margin-bottom: 14px; }
+.weak-empty p { font-size: 14px; }
+.weak-empty small { font-size: 12px; display: block; margin-top: 6px; }
+.weak-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.weak-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.weak-clear-btn {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 11px;
+  color: var(--danger);
+  background: var(--danger-light);
+  border: 1px solid #fecaca;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.weak-item {
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  border-left: 3px solid var(--danger);
+}
+.weak-item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.weak-q { font-size: 13.5px; font-weight: 500; color: var(--text); line-height: 1.65; flex: 1; }
+.weak-count {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--danger-light);
+  color: var(--danger);
+  padding: 3px 9px;
+  border-radius: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid #fecaca;
+}
+.weak-ans { font-size: 12px; color: var(--success); font-weight: 500; margin-bottom: 6px; }
+.weak-exp-toggle {
+  font-size: 11px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 0;
+  text-decoration: underline;
+}
+.weak-exp-text {
+  display: none;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-top: 6px;
+  background: #f8faff;
+  border-radius: 8px;
+  padding: 10px;
+}
+.weak-exp-text.open { display: block; }
+.practice-all-btn {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: var(--danger);
+  color: #fff;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 12px;
+  box-shadow: 0 4px 12px rgba(220,38,38,0.25);
+}
+.practice-all-btn:disabled { opacity: 0.4; cursor: not-allowed; background: #9ca3af; box-shadow: none; }
+
+/* ===== WEAK MODE BANNER ===== */
+.weak-mode-banner {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: #92400e;
+  font-weight: 500;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.weak-mode-banner.hidden { display: none; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-badge">第２種衛生管理者 試験対策</div>
+    <h1>一問一答 トレーニング</h1>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-quiz" onclick="switchTab('quiz')">問題を解く</button>
+    <button class="tab-btn" id="tab-weak" onclick="switchTab('weak')">
+      苦手問題集
+      <span class="tab-badge" id="weak-badge">0</span>
+    </button>
+  </div>
+
+  <!-- QUIZ TAB -->
+  <div id="quiz-tab">
+    <div class="stats-bar">
+      <div class="stat-card"><div class="val" id="s-total">0</div><div class="lbl">解答済み</div></div>
+      <div class="stat-card correct"><div class="val" id="s-correct">0</div><div class="lbl">正解</div></div>
+      <div class="stat-card wrong"><div class="val" id="s-wrong">0</div><div class="lbl">不正解</div></div>
+      <div class="stat-card rate"><div class="val" id="s-rate">—</div><div class="lbl">正答率</div></div>
+    </div>
+
+    <div class="filter-scroll">
+      <button class="filter-btn active" onclick="setFilter('all', event)">すべて</button>
+      <button class="filter-btn" onclick="setFilter('rodo', event)">労働生理</button>
+      <button class="filter-btn" onclick="setFilter('kenko', event)">労働衛生</button>
+      <button class="filter-btn" onclick="setFilter('kanri', event)">関係法令</button>
+      <button class="filter-btn" onclick="setFilter('sagyo', event)">作業環境</button>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span id="prog-label">問題 1 / 30</span>
+        <span id="prog-pct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+
+    <div id="quiz-area">
+      <div class="weak-mode-banner hidden" id="weak-mode-banner">苦手問題練習モード — 間違えた問題を集中特訓中</div>
+      <div class="q-card">
+        <div class="q-num" id="q-num"></div>
+        <div class="cat-chip" id="q-cat"></div>
+        <div class="q-text" id="q-text"></div>
+      </div>
+      <div class="choices" id="choices"></div>
+      <div class="result-banner hidden" id="result-banner">
+        <span class="result-icon" id="result-icon"></span>
+        <span id="result-text"></span>
+      </div>
+      <div class="explanation hidden" id="explanation"></div>
+      <div class="nav-row">
+        <button class="nav-btn" onclick="prevQ()" id="btn-prev">← 前へ</button>
+        <button class="skip-link" onclick="skipQ()">スキップ</button>
+        <button class="nav-btn primary" onclick="nextQ()" id="btn-next">次へ →</button>
+      </div>
+    </div>
+
+    <div class="result-screen" id="result-screen">
+      <div class="result-circle">
+        <div class="result-pct" id="final-pct"></div>
+        <div class="result-sub2">正答率</div>
+      </div>
+      <h2 id="final-msg"></h2>
+      <p class="result-desc" id="final-sub"></p>
+      <div class="result-btns">
+        <button class="restart-btn" onclick="restart()">もう一度チャレンジ</button>
+        <button class="review-btn" id="review-btn" onclick="startWeakPractice()">苦手問題を練習する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEAK TAB -->
+  <div id="weak-tab">
+    <div id="weak-empty" class="weak-empty">
+      <div class="icon">📋</div>
+      <p>まだ苦手問題がありません</p>
+      <small>問題を解いて間違えると、ここに追加されます</small>
+    </div>
+    <div id="weak-list-wrap" style="display:none">
+      <div class="weak-header">
+        <div class="weak-title" id="weak-title">苦手問題 0問</div>
+        <button class="weak-clear-btn" onclick="clearWeak()">リセット</button>
+      </div>
+      <div id="weak-list"></div>
+      <button class="practice-all-btn" id="practice-all-btn" onclick="startWeakPractice()">苦手問題を一括練習する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_Q = [
+  {cat:'rodo',catLabel:'労働生理',q:'心臓の拍動は自律神経系によって支配されている。交感神経が優位になると心拍数はどうなるか？',choices:['増加する','減少する','変わらない','一時的に停止する'],ans:0,exp:'交感神経（アドレナリン系）が優位になると心拍数・血圧が上昇する。副交感神経（迷走神経）は逆に心拍数を低下させる。'},
+  {cat:'rodo',catLabel:'労働生理',q:'筋肉が収縮するためのエネルギー源として、最初に使われるのはどれか？',choices:['グルコース','ATP（アデノシン三リン酸）','脂肪酸','タンパク質'],ans:1,exp:'筋収縮の直接エネルギー源はATP。枯渇後はクレアチンリン酸から再合成され、その後グルコース・脂肪酸等が使われる。'},
+  {cat:'rodo',catLabel:'労働生理',q:'体温調節に関する記述として、正しいものはどれか？',choices:['体温調節中枢は延髄にある','発汗は体温が下がっても起こる','皮膚血管の拡張は体温を下げる働きをする','ふるえは体温が高いときに起こる'],ans:2,exp:'皮膚血管が拡張すると体表面からの放熱が促進され体温が下がる。体温調節中枢は視床下部にある。'},
+  {cat:'rodo',catLabel:'労働生理',q:'呼吸運動に関する記述のうち、正しいものはどれか？',choices:['呼吸は随意運動のみで行われる','呼吸中枢は橋と延髄にある','横隔膜は呼気時に収縮する','肺は自力で膨らむことができる'],ans:1,exp:'呼吸中枢は橋（きょう）と延髄にあり、CO₂濃度上昇を感知して呼吸を調節する。横隔膜は吸気時に収縮・下降し胸腔を広げる。'},
+  {cat:'rodo',catLabel:'労働生理',q:'疲労に関する記述として、誤っているものはどれか？',choices:['精神的疲労と肉体的疲労は異なるメカニズムで生じる','疲労は作業能力の低下と主観的な疲労感を伴う','疲労物質として乳酸が蓄積する','慢性疲労は十分な睡眠で完全に回復する'],ans:3,exp:'慢性疲労（蓄積疲労）は短期の睡眠だけでは回復しない。長期的な休養・生活習慣の改善が必要。'},
+  {cat:'rodo',catLabel:'労働生理',q:'消化器系に関する記述として、正しいものはどれか？',choices:['胃液のpHは約7（中性）である','小腸では水分と電解質のみが吸収される','すい液には脂肪・タンパク質・糖質を分解する酵素が含まれる','大腸では栄養素の大部分が吸収される'],ans:2,exp:'膵液にはリパーゼ（脂肪）・プロテアーゼ（タンパク質）・アミラーゼ（糖質）が含まれる。胃液のpHは約1〜2（強酸性）。'},
+  {cat:'rodo',catLabel:'労働生理',q:'血液の成分とその働きに関する記述として、誤っているものはどれか？',choices:['赤血球はヘモグロビンにより酸素を運搬する','血小板は血液凝固に関与する','白血球の中でリンパ球は免疫に関与する','血漿はCO₂を運搬せず酸素のみ運搬する'],ans:3,exp:'CO₂の約70%は血漿中で重炭酸イオン（HCO₃⁻）として運搬される。残りは赤血球中のヘモグロビンと結合するものなどが含まれる。'},
+  {cat:'rodo',catLabel:'労働生理',q:'ストレス反応に関する記述として、正しいものはどれか？',choices:['ストレス反応は身体的症状のみで精神的症状は含まれない','汎適応症候群（GAS）は警告期・抵抗期・疲弊期の3段階','コルチゾールは副交感神経の活性化により分泌される','ストレス反応と個人の認知評価は無関係である'],ans:1,exp:'セリエの汎適応症候群（GAS）は、ストレスへの生体反応を警告反応期・抵抗期・疲弊期の3段階で説明する。'},
+  {cat:'kenko',catLabel:'労働衛生',q:'職場における腰痛予防対策指針に関する記述として、正しいものはどれか？',choices:['重量物取扱い作業では男性の場合55kgを超えないようにする','腰痛健診は年2回実施が義務付けられている','腰痛予防体操は休憩時間中にのみ行う','重量物を持ち上げるときは膝を伸ばして腰を曲げる'],ans:0,exp:'厚労省の腰痛予防対策指針では、継続的な重量物取扱いは男性で体重の40%以下（概ね55kg以下）が目安。'},
+  {cat:'kenko',catLabel:'労働衛生',q:'VDT作業に関する記述として、誤っているものはどれか？',choices:['1時間を超える連続作業後は10〜15分の休止が推奨される','作業台の高さは60〜75cmが推奨される','ディスプレイと目の距離は40cm以上が推奨される','年1回の健康診断実施が義務付けられている'],ans:3,exp:'VDT作業の健康診断は法的義務ではなく、ガイドライン（2019年）による推奨。'},
+  {cat:'kenko',catLabel:'労働衛生',q:'有害業務に係る健康診断の項目として、一般健康診断には含まれないものはどれか？',choices:['身長・体重・腹囲の測定','尿中代謝物の測定','血圧の測定','血液検査（血糖・血中脂質等）'],ans:1,exp:'尿中代謝物の測定は有機溶剤等を扱う労働者への特殊健康診断項目で、一般健診には含まれない。'},
+  {cat:'kenko',catLabel:'労働衛生',q:'熱中症の分類に関する記述として、正しいものはどれか？',choices:['熱けいれんは最も重篤な病態である','熱射病は体温が正常であることが多い','熱疲労では大量発汗と脱力感が主症状','熱射病では意識障害は伴わない'],ans:2,exp:'熱疲労（heat exhaustion）は大量発汗による脱水・電解質喪失が原因。最重症は熱射病で意識障害を伴い緊急処置が必要。'},
+  {cat:'kenko',catLabel:'労働衛生',q:'一次救命処置（BLS）における成人の胸骨圧迫の深さとして正しいものはどれか？',choices:['2〜3cm','4〜5cm','5〜6cm','7〜8cm'],ans:2,exp:'JRCガイドラインでは胸骨圧迫の深さは5〜6cm、速さは1分間に100〜120回が推奨。'},
+  {cat:'kenko',catLabel:'労働衛生',q:'職業性疾病と原因物質の組合せとして、誤っているものはどれか？',choices:['じん肺 — 遊離けい酸','振動障害 — チェーンソー等の振動工具','白内障 — 赤外線','潜水病（減圧症）— 紫外線'],ans:3,exp:'潜水病（減圧症）は高気圧環境からの急速な減圧で窒素が気泡化することで生じる。紫外線による疾病は電気性眼炎や皮膚炎。'},
+  {cat:'kenko',catLabel:'労働衛生',q:'メンタルヘルスに関する記述として、正しいものはどれか？',choices:['ストレスチェックは従業員数に関わらず全事業場で義務付けられている','ストレスチェックの結果は事業者に直接通知される','高ストレス者が申し出た場合、事業者は医師による面接指導を実施する義務がある','一次予防とはメンタル疾患の早期発見・早期治療を指す'],ans:2,exp:'労働安全衛生法第66条の10に基づき、高ストレス者が申し出た場合、事業者は医師による面接指導を実施しなければならない。'},
+  {cat:'kenko',catLabel:'労働衛生',q:'じん肺に関する記述として、正しいものはどれか？',choices:['じん肺はすべての粉塵で発生する','じん肺の管理区分は4段階に分類される','けい肺はアスベストの吸入によって起こる','じん肺は完治する疾患である'],ans:1,exp:'じん肺の管理区分は管理1〜管理4の4段階（管理2・3はa/bに細分化）に分類される。けい肺は遊離けい酸、石綿肺はアスベストによる。'},
+  {cat:'kenko',catLabel:'労働衛生',q:'AED（自動体外式除細動器）に関する記述として、正しいものはどれか？',choices:['AEDは医師免許がなければ使用できない','AEDは心臓が「細動」状態のとき有効','AEDによる電気ショック後は胸骨圧迫を行わない','AEDは意識のある傷病者にも使用できる'],ans:1,exp:'AEDは心室細動・無脈性心室頻拍に対して有効。電気ショック後も直ちに胸骨圧迫を再開。AEDは資格不要で市民が使用できる（2004年〜）。'},
+  {cat:'kanri',catLabel:'関係法令',q:'労働安全衛生法において、常時50人以上の労働者を使用する事業場に選任が義務付けられているものはどれか？',choices:['安全管理者','安全衛生委員会','衛生管理者','衛生推進者'],ans:2,exp:'衛生管理者は常時50人以上の事業場に選任義務。衛生推進者は10人以上50人未満の事業場。'},
+  {cat:'kanri',catLabel:'関係法令',q:'第２種衛生管理者免許を持つ者が衛生管理者として選任できない事業場として、正しいものはどれか？',choices:['情報通信業（常時100人）','製造業（常時80人）','金融業（常時60人）','卸売業（常時90人）'],ans:1,exp:'第２種は有害業務を行わない業種（農業、金融業、情報通信業、卸売業等）のみ対応。製造業・建設業等では第１種が必要。'},
+  {cat:'kanri',catLabel:'関係法令',q:'衛生委員会に関する記述として、正しいものはどれか？',choices:['毎月1回以上の開催が義務付けられている','委員の過半数は使用者側が指名する','議長は事業場で最も上位の管理者が務める','審議事項に労働者の健康診断結果は含まれない'],ans:0,exp:'衛生委員会は毎月1回以上開催し、議事録を3年間保存する義務がある。'},
+  {cat:'kanri',catLabel:'関係法令',q:'労働者が受けなければならない一般定期健康診断の頻度として正しいものはどれか？',choices:['6か月ごと','1年ごと','2年ごと','3年ごと'],ans:1,exp:'労働安全衛生規則第44条に基づき、一般定期健康診断は1年以内ごとに1回実施。深夜業等の特定労働者は6か月ごと。'},
+  {cat:'kanri',catLabel:'関係法令',q:'産業医に関する記述として、誤っているものはどれか？',choices:['常時50人以上の事業場で選任義務がある','常時3000人以上の事業場では専属産業医が必要','産業医は少なくとも毎月1回作業場を巡視しなければならない','産業医は衛生委員会の委員となる'],ans:2,exp:'産業医の作業場巡視は原則毎月1回だが、一定条件下では2か月に1回に緩和できる（2019年改正）。'},
+  {cat:'kanri',catLabel:'関係法令',q:'労働基準法における時間外労働の上限規制として、正しいものはどれか？',choices:['月45時間・年360時間が原則の上限','月60時間・年480時間が原則の上限','月80時間・年720時間が上限','上限は業種によらず一律同じ'],ans:0,exp:'時間外労働の上限は原則として月45時間・年360時間。臨時的な特別事情があっても年720時間以内・単月100時間未満が絶対上限。'},
+  {cat:'kanri',catLabel:'関係法令',q:'特定化学物質を製造・使用する事業場で必要な主任者として、正しいものはどれか？',choices:['化学物質取扱主任者','特定化学物質作業主任者','危険物取扱者','毒物劇物取扱責任者'],ans:1,exp:'特定化学物質障害予防規則に基づき、特定化学物質を製造・使用する作業では「特定化学物質作業主任者」の選任が義務付けられている。'},
+  {cat:'kanri',catLabel:'関係法令',q:'作業環境測定について、正しいものはどれか？',choices:['測定結果は労働基準監督署に毎月報告する義務がある','特定の有害業務では6か月以内ごとに1回の定期測定が必要','測定は事業者が自ら行わなければならない','測定記録の保存期間はすべての業務で3年間'],ans:1,exp:'有機溶剤・特定化学物質・粉塵等の有害業務は6か月以内ごとに1回の定期測定が義務付けられている。一部の業務は30年間保存が必要。'},
+  {cat:'sagyo',catLabel:'作業環境',q:'換気に関する記述として、正しいものはどれか？',choices:['必要換気量は労働者1人あたりの酸素消費量に基づく','CO₂濃度が1000ppm以下になるよう換気することが推奨される','換気回数は空気量÷室容積で計算する','自然換気は機械換気より換気効率が高い'],ans:1,exp:'室内CO₂濃度は1000ppm以下が目安（建築物環境衛生管理基準）。換気回数=換気量÷室容積/時間。'},
+  {cat:'sagyo',catLabel:'作業環境',q:'騒音に関する記述として、正しいものはどれか？',choices:['騒音性難聴は低音域から始まる','85dBを超える騒音環境では聴力保護具の使用が義務付けられる','騒音は精神的影響を与えない','騒音性難聴は治療によって完全回復できる'],ans:1,exp:'85dB以上の騒音発生作業では聴力保護具の着用が義務付けられる。騒音性難聴は4000Hz（C5-dip）から始まり、不可逆的（治らない）。'},
+  {cat:'sagyo',catLabel:'作業環境',q:'WBGT（湿球黒球温度）の計算に使われる要素として正しい組合せはどれか？',choices:['乾球温度・気圧・風速','湿球温度・黒球温度・乾球温度','乾球温度・湿球温度・気圧','黒球温度・気圧・風速'],ans:1,exp:'WBGTは屋外では湿球温度×0.7＋黒球温度×0.2＋乾球温度×0.1、屋内（日射なし）では湿球温度×0.7＋黒球温度×0.3で計算される。'},
+  {cat:'sagyo',catLabel:'作業環境',q:'有機溶剤作業主任者を選任しなければならない作業として、正しいものはどれか？',choices:['第一種有機溶剤を使用する屋外作業','第三種有機溶剤を使用するすべての作業','第一種・第二種有機溶剤を使用する屋内作業等','第二種有機溶剤を使用する屋外作業'],ans:2,exp:'有機溶剤作業主任者の選任が必要なのは、第一種・第二種有機溶剤を使用する屋内作業・タンク内作業等。'},
+  {cat:'sagyo',catLabel:'作業環境',q:'照明に関する記述として、正しいものはどれか？',choices:['精密な作業の照度基準は300ルクス以上','照度の単位はカンデラ（cd）である','全般照明と局部照明の差は大きくするほど目に良い','まぶしさ（グレア）は作業効率を下げる'],ans:3,exp:'グレア（不快な輝き）は視覚疲労や作業ミスの原因となる。精密作業の照度基準は1000ルクス以上（JIS Z9110）。照度の単位はルクス（lx）。'},
+];
+
+let questions=[...ALL_Q], currentFilter='all', idx=0, answered=false;
+let stats={total:0,correct:0,wrong:0}, history={}, shuffled=[];
+let weakMap={}, weakPracticeMode=false, weakQueue=[], weakIdx=0;
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function switchTab(t){
+  ['quiz','weak'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('active',x===t);
+    document.getElementById(x+'-tab').style.display=x===t?'block':'none';
+  });
+  if(t==='weak')renderWeakList();
+}
+
+function setFilter(f,e){
+  currentFilter=f; weakPracticeMode=false;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  if(e&&e.target)e.target.classList.add('active');
+  questions=f==='all'?ALL_Q:ALL_Q.filter(q=>q.cat===f);
+  shuffled=shuffle([...Array(questions.length).keys()]);
+  idx=0;answered=false;history={};stats={total:0,correct:0,wrong:0};
+  updateStats();
+  document.getElementById('result-screen').className='result-screen';
+  document.getElementById('quiz-area').style.display='block';
+  renderQ();
+}
+
+function initQuiz(){
+  shuffled=shuffle([...Array(questions.length).keys()]);
+  idx=0;answered=false;history={};stats={total:0,correct:0,wrong:0};
+  weakPracticeMode=false;updateStats();renderQ();
+}
+
+function renderQ(){
+  const isWeak=weakPracticeMode;
+  let q;
+  if(isWeak){
+    if(weakIdx>=weakQueue.length){showResult();return;}
+    q=weakQueue[weakIdx];
+    const total=weakQueue.length;
+    document.getElementById('q-num').textContent=`苦手問題 ${weakIdx+1} / ${total}`;
+    const pct=Math.round((weakIdx/total)*100);
+    document.getElementById('prog-label').textContent=`苦手問題 ${weakIdx+1} / ${total}`;
+    document.getElementById('prog-pct').textContent=pct+'%';
+    document.getElementById('prog-fill').style.width=pct+'%';
+  }else{
+    const qi=shuffled[idx];q=questions[qi];
+    const total=questions.length;
+    document.getElementById('q-num').textContent=`問 ${idx+1} / ${total}`;
+    const pct=Math.round((idx/total)*100);
+    document.getElementById('prog-label').textContent=`問題 ${idx+1} / ${total}`;
+    document.getElementById('prog-pct').textContent=pct+'%';
+    document.getElementById('prog-fill').style.width=pct+'%';
+  }
+  document.getElementById('weak-mode-banner').className='weak-mode-banner'+(isWeak?'':' hidden');
+  document.getElementById('q-text').textContent=q.q;
+  const catEl=document.getElementById('q-cat');
+  catEl.textContent=q.catLabel;catEl.className='cat-chip '+q.cat;
+  const choicesEl=document.getElementById('choices');choicesEl.innerHTML='';
+  const labels=['ア','イ','ウ','エ'];
+  q.choices.forEach((c,i)=>{
+    const btn=document.createElement('button');
+    btn.className='choice-btn';
+    btn.innerHTML=`<span class="choice-label">${labels[i]}</span><span>${c}</span>`;
+    btn.onclick=()=>answer(i);
+    choicesEl.appendChild(btn);
+  });
+  document.getElementById('result-banner').className='result-banner hidden';
+  document.getElementById('explanation').className='explanation hidden';
+  answered=false;
+  document.getElementById('btn-prev').disabled=isWeak?weakIdx===0:idx===0;
+  const isLast=isWeak?weakIdx===weakQueue.length-1:idx===questions.length-1;
+  document.getElementById('btn-next').textContent=isLast?'結果を見る →':'次へ →';
+}
+
+function answer(chosen){
+  if(answered)return;answered=true;
+  const q=weakPracticeMode?weakQueue[weakIdx]:questions[shuffled[idx]];
+  const correct=q.ans===chosen;
+  if(!weakPracticeMode){
+    history[idx]=chosen;
+    stats.total=Object.keys(history).length;
+    stats.correct=Object.keys(history).filter(k=>questions[shuffled[k]].ans===history[k]).length;
+    stats.wrong=stats.total-stats.correct;
+    updateStats();
+  }
+  if(!correct){
+    const qid=q.q;
+    weakMap[qid]={q,count:(weakMap[qid]?weakMap[qid].count:0)+1};
+    updateWeakBadge();
+  }
+  highlightAnswers(chosen,q);
+}
+
+function highlightAnswers(chosen,q){
+  const correct=q.ans===chosen;
+  document.querySelectorAll('.choice-btn').forEach((btn,i)=>{
+    btn.disabled=true;
+    if(i===chosen&&correct)btn.classList.add('correct');
+    else if(i===chosen&&!correct)btn.classList.add('wrong');
+    else if(i===q.ans&&!correct)btn.classList.add('reveal-correct');
+  });
+  const banner=document.getElementById('result-banner');
+  const icon=document.getElementById('result-icon');
+  const txt=document.getElementById('result-text');
+  if(correct){banner.className='result-banner ok';icon.textContent='○';txt.textContent='正解！よくできました';}
+  else{banner.className='result-banner ng';icon.textContent='✕';txt.textContent=`不正解。正解は「${['ア','イ','ウ','エ'][q.ans]}：${q.choices[q.ans]}」`;}
+  const expEl=document.getElementById('explanation');
+  expEl.innerHTML='<strong>解説：</strong>'+q.exp;expEl.className='explanation';
+}
+
+function skipQ(){nextQ(true);}
+function nextQ(skip){
+  if(weakPracticeMode){if(weakIdx<weakQueue.length-1){weakIdx++;renderQ();}else showResult();}
+  else{if(idx<questions.length-1){idx++;renderQ();}else showResult();}
+}
+function prevQ(){
+  if(weakPracticeMode){if(weakIdx>0){weakIdx--;renderQ();}}
+  else{if(idx>0){idx--;renderQ();}}
+}
+
+function updateStats(){
+  document.getElementById('s-total').textContent=stats.total;
+  document.getElementById('s-correct').textContent=stats.correct;
+  document.getElementById('s-wrong').textContent=stats.wrong;
+  document.getElementById('s-rate').textContent=stats.total>0?Math.round((stats.correct/stats.total)*100)+'%':'—';
+}
+
+function updateWeakBadge(){
+  const count=Object.keys(weakMap).length;
+  const badge=document.getElementById('weak-badge');
+  badge.textContent=count;badge.className='tab-badge'+(count>0?' show':'');
+}
+
+function showResult(){
+  document.getElementById('quiz-area').style.display='none';
+  const rs=document.getElementById('result-screen');rs.className='result-screen show';
+  const pct=stats.total>0?Math.round((stats.correct/stats.total)*100):0;
+  document.getElementById('final-pct').textContent=pct+'%';
+  let msg,sub;
+  if(pct>=80){msg='合格圏内！この調子で！';sub='本番でも自信を持って臨みましょう。苦手な分野を中心に復習を。';}
+  else if(pct>=60){msg='もう少し！あと一歩';sub='合格ラインまであと少し。解説を確認して再チャレンジ！';}
+  else{msg='基礎から見直しましょう';sub='各分野の基本事項を整理して、もう一度トライしてください。';}
+  document.getElementById('final-msg').textContent=msg;
+  document.getElementById('final-sub').textContent=sub;
+  const weakCount=Object.keys(weakMap).length;
+  const reviewBtn=document.getElementById('review-btn');
+  reviewBtn.disabled=weakCount===0;
+  reviewBtn.textContent=weakCount>0?`苦手問題（${weakCount}問）を練習する`:'苦手問題なし';
+}
+
+function restart(){
+  weakPracticeMode=false;
+  document.getElementById('quiz-area').style.display='block';
+  document.getElementById('result-screen').className='result-screen';
+  stats={total:0,correct:0,wrong:0};updateStats();initQuiz();
+}
+
+function startWeakPractice(){
+  const keys=Object.keys(weakMap);if(keys.length===0)return;
+  weakQueue=shuffle(keys.map(k=>weakMap[k].q));weakIdx=0;weakPracticeMode=true;
+  stats={total:0,correct:0,wrong:0};updateStats();
+  document.getElementById('quiz-area').style.display='block';
+  document.getElementById('result-screen').className='result-screen';
+  switchTab('quiz');renderQ();
+}
+
+function renderWeakList(){
+  const keys=Object.keys(weakMap);
+  document.getElementById('weak-empty').style.display=keys.length===0?'block':'none';
+  document.getElementById('weak-list-wrap').style.display=keys.length===0?'none':'block';
+  if(keys.length===0)return;
+  document.getElementById('weak-title').textContent=`苦手問題 ${keys.length}問`;
+  const list=document.getElementById('weak-list');list.innerHTML='';
+  keys.sort((a,b)=>weakMap[b].count-weakMap[a].count).forEach((k,i)=>{
+    const item=weakMap[k];const q=item.q;const expId='exp-'+i;
+    const div=document.createElement('div');div.className='weak-item';
+    div.innerHTML=`<div class="weak-item-top"><div class="weak-q">${q.q}</div><div class="weak-count">✕ ${item.count}回</div></div><div class="weak-ans">正解：${['ア','イ','ウ','エ'][q.ans]}「${q.choices[q.ans]}」</div><button class="weak-exp-toggle" onclick="toggleExp('${expId}')">解説を見る ▾</button><div class="weak-exp-text" id="${expId}">${q.exp}</div>`;
+    list.appendChild(div);
+  });
+}
+
+function toggleExp(id){
+  const el=document.getElementById(id);const btn=el.previousElementSibling;
+  el.classList.toggle('open');btn.textContent=el.classList.contains('open')?'解説を閉じる ▴':'解説を見る ▾';
+}
+
+function clearWeak(){
+  if(!confirm('苦手問題リストをリセットしますか？'))return;
+  weakMap={};updateWeakBadge();renderWeakList();
+}
+
+initQuiz();
+</script>
+</body>
+</html>
